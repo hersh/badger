@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"id3"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"unicode/utf8"
 )
 
 type SongInfo struct {
@@ -21,6 +23,10 @@ type MusicService struct {
 }
 
 func (ms *MusicService) ScanSongFile(path string) (*SongInfo, error) {
+	if !utf8.ValidString(path) {
+		return nil, errors.New(fmt.Sprintf("Invalid utf8 in filename: %s", path))
+	}
+
 	song := new(SongInfo)
 	song.full_filename = path
 	song.Filename = song.full_filename[len(ms.music_path_root)+1:]
@@ -47,7 +53,7 @@ func (ms *MusicService) scanVisit(path string, info os.FileInfo, err error) erro
 			fmt.Printf("Error: %s\n", err.Error())
 		} else {
 			ms.songs = append(ms.songs, song)
-			fmt.Printf("Scanned file %s\n", path)
+//			fmt.Printf("Scanned file %s\n", path)
 		}
 	}
 	return nil
