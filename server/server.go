@@ -4,69 +4,84 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"id3"
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"unicode/utf8"
 )
 
-type SongInfo struct {
-	Title, Album, Artist, Filename string
-	full_filename string
+type Node struct {
+	Name string
+	Children []*Node
 }
 
 type MusicService struct {
 	music_path_root string
-	songs []*SongInfo
+	song_tree *Node
 }
 
-func (ms *MusicService) ScanSongFile(path string) (*SongInfo, error) {
-	if !utf8.ValidString(path) {
-		return nil, errors.New(fmt.Sprintf("Invalid utf8 in filename: %s", path))
+// filename is relative to ms.music_path_root
+func (ms *MusicService) scanFile(filename string) (*Node, error) {
+	if path.Ext(filename) != ".mp3" {
+		return nil, errors.New("Skipping non-mp3 file")
 	}
+	if !utf8.ValidString(filename) {
+		return nil, errors.New(fmt.Sprintf("Invalid utf8 in filename %s", filename))
+	}
+	node := new(Node)
+	node.Name = filename
+	return node, nil
+}
 
-	song := new(SongInfo)
-	song.full_filename = path
-	song.Filename = song.full_filename[len(ms.music_path_root)+1:]
-
-	var fd, err = os.Open(path)
+// filename is relative to ms.music_path_root
+func (ms *MusicService) scanDir(filename string) (*Node, error) {
+	if !utf8.ValidString(filename) {
+		return nil, errors.New(fmt.Sprintf("Invalid utf8 in filename %s", filename))
+	}
+	fullname := path.Join(ms.music_path_root, filename)
+	
+	file, err := os.Open(fullname)
 	if err != nil {
-		return song, err
+		return nil, err
 	}
-	defer fd.Close()
-	id3_data := id3.Read(fd)
-
-	if id3_data != nil {
-		song.Title = id3_data.Name
-		song.Album = id3_data.Album
-		song.Artist = id3_data.Artist
+	children, err := file.Readdir(0)
+	if err != nil {
+		return nil, err
 	}
-	return song, nil
-}
+	node := new(Node)
+	node.Name = filename
+	node.Children = make([]*Node, 0, len(children))
 
-func (ms *MusicService) scanVisit(path string, info os.FileInfo, err error) error {
-	if filepath.Ext(path) == ".mp3" {
-		song, err := ms.ScanSongFile(path)
-		if err != nil {
-			fmt.Printf("Error: %s\n", err.Error())
+	for _, child := range(children) {
+		child_path := path.Join(filename, child.Name())
+		fmt.Printf("child is %s\n", child_path)
+		var child_node *Node;
+		if child.IsDir() {
+			child_node, err = ms.scanDir(child_path)
 		} else {
-			ms.songs = append(ms.songs, song)
-//			fmt.Printf("Scanned file %s\n", path)
+			child_node, err = ms.scanFile(child_path)
+		}
+		if child_node != nil {
+			node.Children = append(node.Children, child_node)
 		}
 	}
-	return nil
+	if len(node.Children) == 0 {
+		return nil, nil
+	}
+	return node, nil
 }
 
 func (ms *MusicService) ScanMusic() {
-	ms.songs = make([]*SongInfo, 0, 1000)
-	filepath.Walk(ms.music_path_root, ms.scanVisit)
-	fmt.Printf("len(ms.songs) = %d\n", len(ms.songs))
+	var err error
+	ms.song_tree, err = ms.scanDir("")
+	if err != nil {
+		fmt.Printf("Error scanning music: %s\n", err.Error())
+	}
 }
 
 func (ms *MusicService) listHandler(w http.ResponseWriter, r *http.Request) {
-	json_data, err := json.MarshalIndent(ms.songs, "", " ")
+	json_data, err := json.MarshalIndent(ms.song_tree, "", " ")
 	if err != nil {
 		fmt.Fprintf(w, "Error encoding data: %s\n", err.Error())
 		return
@@ -75,7 +90,7 @@ func (ms *MusicService) listHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ms *MusicService) getHandler(w http.ResponseWriter, r *http.Request) {
-	filename := ms.music_path_root + "/" + r.URL.Path[5:]
+	filename := ms.music_path_root + "/" + r.URL.Path[5:] // 5 is length of '/get/'
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Fprintf(w, "404 Error: %s\n", err.Error())
