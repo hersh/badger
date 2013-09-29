@@ -18,10 +18,14 @@ public class Node {
         Node node = new Node();
         JSONArray json_children;
         try {
-            node.name = json.getString("Name");        
+            node.name = json.getString("Name");
+        } catch( JSONException ex ) {
+        	return null;
+        }
+        try {
             json_children = json.getJSONArray("Children");
         } catch( JSONException ex ) {
-            return null;
+            json_children = null;
         }
         if( json_children != null && json_children.length() > 0 ) {
             node.children = new ArrayList<Node>(json_children.length());

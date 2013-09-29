@@ -24,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 public class PlayerActivity extends Activity
 	                        implements ListView.OnItemClickListener {
@@ -116,7 +117,7 @@ public class PlayerActivity extends Activity
     }
 
 	@Override
-	public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+	public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
 		Node node = current_dir.children.get(position);
 		if( node != null ) {
 			if( node.children != null && node.children.size() > 0 ) {
