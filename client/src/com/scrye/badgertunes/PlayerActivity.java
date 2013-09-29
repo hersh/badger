@@ -17,16 +17,20 @@ import android.os.Handler;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-public class PlayerActivity extends Activity {
+public class PlayerActivity extends Activity
+	                        implements ListView.OnItemClickListener {
 
     private Handler handler = new Handler();
-    private ArrayList<SongInfo> songs = new ArrayList<SongInfo>();
+    private Node root;
+    private Node current_dir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +81,7 @@ public class PlayerActivity extends Activity {
     	    // Create a new HTTP Client
     	    DefaultHttpClient defaultClient = new DefaultHttpClient();
     	    // Setup the get request
-    	    HttpGet httpGetRequest = new HttpGet("http://10.1.10.16:8080/list");
+    	    HttpGet httpGetRequest = new HttpGet("http://10.1.10.9:8080/list");
 
     	    // Execute the request in the client
     	    HttpResponse httpResponse = defaultClient.execute(httpGetRequest);
@@ -85,40 +89,23 @@ public class PlayerActivity extends Activity {
     	    StringBuilder sb = stringBuilderFromReader(new InputStreamReader(httpResponse.getEntity().getContent(), "UTF-8"));
     	    
     	    // Instantiate a JSON array from the request response
-    	    JSONArray json_song_array = new JSONArray(sb.toString());
-    	    
-    	    loadSongsFromJSON(json_song_array);
+    	    JSONObject json = new JSONObject(sb.toString());
+            root = Node.read( json );
+            current_dir = root;
 
     	} catch(Exception e){
     	    // TODO In your production code handle any errors and catch the individual exceptions
-    		Log.e("PlayerActivity", e.toString());
+            Log.e("PlayerActivity", e.toString());
     	}
     }
     
-    private void loadSongsFromJSON(JSONArray array) {
-        songs.clear();
-    	for(int i = 0; i < array.length(); i++){
-            JSONObject json_song;
-			try {
-				json_song = array.getJSONObject(i);
-			    SongInfo song = new SongInfo();
-                song.title = json_song.getString("Title");
-                song.album = json_song.getString("Album");
-                song.artist = json_song.getString("Artist");
-                song.filename = json_song.getString("Filename");
-                songs.add(song);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
-    }
     // Must be run in GUI thread
     private void showSongList() {
-    	ArrayAdapter<SongInfo> adapter =
-    		new ArrayAdapter<SongInfo>(this, R.layout.song_item, R.id.title, songs);
+    	ArrayAdapter<Node> adapter =
+            new ArrayAdapter<Node>(this, R.layout.song_item, R.id.title, current_dir.children);
         ListView song_list_view = (ListView) findViewById(R.id.song_list);
     	song_list_view.setAdapter(adapter);
+    	song_list_view.setOnItemClickListener(this);
     }
     
     @Override
@@ -127,5 +114,15 @@ public class PlayerActivity extends Activity {
         getMenuInflater().inflate(R.menu.player, menu);
         return true;
     }
-    
+
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+		Node node = current_dir.children.get(position);
+		if( node != null ) {
+			if( node.children != null && node.children.size() > 0 ) {
+				current_dir = node;
+				showSongList();
+			}
+		}
+	}
 }
