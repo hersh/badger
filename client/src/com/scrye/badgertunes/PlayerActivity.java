@@ -4,12 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Bundle;
@@ -22,9 +21,9 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 public class PlayerActivity extends Activity
 	                        implements ListView.OnItemClickListener {
@@ -102,6 +101,20 @@ public class PlayerActivity extends Activity
     
     // Must be run in GUI thread
     private void showSongList() {
+    	// set up horizontal list of parent directories
+    	ArrayList<Node> parents = new ArrayList<Node>();
+    	for(Node node = current_dir; node != null; node = node.parent) {
+    		parents.add(node);
+    	}
+    	Collections.reverse(parents);
+    	LinearLayout parent_dirs_layout = (LinearLayout) findViewById(R.id.parent_dirs);
+    	parent_dirs_layout.removeAllViews();
+    	for(int i = 0; i < parents.size(); i++) {
+    		DirectoryButton dir_button = new DirectoryButton(this, parents.get(i));
+    		parent_dirs_layout.addView(dir_button);
+    	}
+    	
+    	// set up main list of songs or directories
     	ArrayAdapter<Node> adapter =
             new ArrayAdapter<Node>(this, R.layout.song_item, R.id.title, current_dir.children);
         ListView song_list_view = (ListView) findViewById(R.id.song_list);
@@ -121,9 +134,13 @@ public class PlayerActivity extends Activity
 		Node node = current_dir.children.get(position);
 		if( node != null ) {
 			if( node.children != null && node.children.size() > 0 ) {
-				current_dir = node;
-				showSongList();
+				setCurrentDirectory(node);
 			}
 		}
+	}
+
+	public void setCurrentDirectory(Node node) {
+		current_dir = node;
+		showSongList();
 	}
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class Node {
     public String name;
+    public String filename;
     public ArrayList<Node> children;
     public Node parent;
     
@@ -14,14 +15,20 @@ public class Node {
     	return name;
     }
 
+    static public String nameFromFilename(String filename) {
+    	String[] path_elements = filename.split("/");
+    	return path_elements[path_elements.length - 1];
+    }
+    
     static public Node read(JSONObject json) {
         Node node = new Node();
         JSONArray json_children;
         try {
-            node.name = json.getString("Name");
+            node.filename = json.getString("Name");
         } catch( JSONException ex ) {
         	return null;
         }
+        node.name = nameFromFilename(node.filename);
         try {
             json_children = json.getJSONArray("Children");
         } catch( JSONException ex ) {
