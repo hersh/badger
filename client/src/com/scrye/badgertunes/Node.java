@@ -3,6 +3,10 @@ package com.scrye.badgertunes;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.os.Environment;
+
+import java.io.File;
 import java.util.ArrayList;
 
 public class Node {
@@ -20,7 +24,7 @@ public class Node {
     	return path_elements[path_elements.length - 1];
     }
     
-    static public Node read(JSONObject json) {
+    static public Node readJson(JSONObject json) {
         Node node = new Node();
         JSONArray json_children;
         try {
@@ -39,13 +43,33 @@ public class Node {
             for( int i = 0; i < json_children.length(); i++ ) {
                 try {
                     JSONObject json_child = json_children.getJSONObject( i );
-                    Node child = read( json_child );
+                    Node child = readJson( json_child );
                     if( child != null ) {
                         node.children.add( child );
                         child.parent = node;
                     }
                 } catch( JSONException ex ) {}
             }
+        }
+        return node;
+    }
+    
+    static public Node readLocal(File file) {
+        Node node = new Node();
+        node.filename = file.getPath();
+        node.name = file.getName();
+        if(file.isDirectory()) {
+        	File[] files = file.listFiles();
+        	if(files != null && files.length > 0) {
+        		node.children = new ArrayList<Node>(files.length);
+        		for(int i = 0; i < files.length; i++) {
+        			Node child = readLocal(files[i]);
+        			if(child != null) {
+        				node.children.add(child);
+        				child.parent = node;
+        			}
+        		}
+        	}
         }
         return node;
     }

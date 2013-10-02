@@ -1,6 +1,7 @@
 package com.scrye.badgertunes;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.app.Activity;
 import android.util.Log;
@@ -41,10 +43,6 @@ public class PlayerActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
-        ProgressBar progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
-        ListView song_list_view = (ListView) findViewById(R.id.song_list);
-        song_list_view.setEmptyView(progress_bar);
               
     	ToggleButtonBar tree_chooser_bar = (ToggleButtonBar) findViewById(R.id.tree_chooser_bar);
     	tree_chooser_bar.addButton("local", "Local", false);
@@ -62,6 +60,8 @@ public class PlayerActivity extends Activity
     private void fillDirectoryBrowser() {
        	LinearLayout parent_dirs_layout = (LinearLayout) findViewById(R.id.parent_dirs);
     	parent_dirs_layout.removeAllViews();
+    	
+    	showLoading();
 
         // Start lengthy operation in a background thread
         new Thread(new Runnable() {
@@ -94,10 +94,31 @@ public class PlayerActivity extends Activity
 
     // Must be run in non-GUI thread
     private void loadLocalSongs() {
-    	local_root = new Node(); // TODO read local files
-    	local_root.name = "localroot";
-    	local_root.children = new ArrayList<Node>();
+        File sdcard = Environment.getExternalStorageDirectory();
+        File root_dir = new File(sdcard, "badgertunes");
+        local_root = Node.readLocal(root_dir);
+        if(local_root.children == null) {
+        	local_root.children = new ArrayList<Node>();
+        }
     	current_dir = local_root;
+    }
+    
+    private void showLoading() {
+    	ProgressBar progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
+        ListView song_list_view = (ListView) findViewById(R.id.song_list);
+        song_list_view.setEmptyView(progress_bar);
+        
+       	View empty_indicator = findViewById(R.id.empty_indicator);
+        empty_indicator.setVisibility(View.GONE);
+    }
+    
+    private void showEmpty() {
+    	View empty_indicator = findViewById(R.id.empty_indicator);
+    	ListView song_list_view = (ListView) findViewById(R.id.song_list);
+        song_list_view.setEmptyView(empty_indicator);
+        
+        View progress_bar = findViewById(R.id.progress_bar);
+        progress_bar.setVisibility(View.GONE);
     }
 
     // Must be run in non-GUI thread
@@ -115,7 +136,7 @@ public class PlayerActivity extends Activity
     	    
     	    // Instantiate a JSON array from the request response
     	    JSONObject json = new JSONObject(sb.toString());
-            remote_root = Node.read( json );
+            remote_root = Node.readJson( json );
             current_dir = remote_root;
 
     	} catch(Exception e){
@@ -145,6 +166,8 @@ public class PlayerActivity extends Activity
         ListView song_list_view = (ListView) findViewById(R.id.song_list);
     	song_list_view.setAdapter(adapter);
     	song_list_view.setOnItemClickListener(this);
+    	
+    	showEmpty();
     }
     
     @Override
