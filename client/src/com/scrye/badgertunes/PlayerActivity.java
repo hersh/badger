@@ -21,40 +21,57 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.ToggleButton;
 
 public class PlayerActivity extends Activity
 	                        implements ListView.OnItemClickListener {
 
     private Handler handler = new Handler();
-    private Node root;
+    private Node remote_root;
+    private Node local_root;
     private Node current_dir;
+    private boolean use_local;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_player);
+        setContentView(R.layout.main);
 
-        // Create a progress bar to display while the list loads
-        ProgressBar progressBar = new ProgressBar(this);
-        progressBar.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
-        											 LayoutParams.WRAP_CONTENT));
-        progressBar.setIndeterminate(true);
-        
+        ProgressBar progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
         ListView song_list_view = (ListView) findViewById(R.id.song_list);
-        song_list_view.setEmptyView(progressBar);
-
-        // Must add the progress bar to the root of the layout
-        ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
-        root.addView(progressBar);
+        song_list_view.setEmptyView(progress_bar);
+              
+    	ToggleButtonBar tree_chooser_bar = (ToggleButtonBar) findViewById(R.id.tree_chooser_bar);
+    	tree_chooser_bar.addButton("local", "Local", false);
+    	tree_chooser_bar.addButton("remote", "Remote", true);
+    	tree_chooser_bar.setListener(this);
+    	
+        setLocal(false);
+    }
+    
+    private void setLocal(boolean  _use_local) {
+    	use_local = _use_local;
+    	fillDirectoryBrowser();
+    }
+    
+    private void fillDirectoryBrowser() {
+       	LinearLayout parent_dirs_layout = (LinearLayout) findViewById(R.id.parent_dirs);
+    	parent_dirs_layout.removeAllViews();
 
         // Start lengthy operation in a background thread
         new Thread(new Runnable() {
             public void run() {
             	Log.w("PlayerActivity", "loading song list");
-            	loadSongList();
+            	if(use_local) {
+            		loadLocalSongs();
+            	} else {
+            		loadRemoteSongs();
+            	}
             	// When that is done, trigger the display of the list in the GUI thread.
                 handler.post(new Runnable() {
                     public void run() {
@@ -76,7 +93,15 @@ public class PlayerActivity extends Activity
     }
 
     // Must be run in non-GUI thread
-    private void loadSongList() {
+    private void loadLocalSongs() {
+    	local_root = new Node(); // TODO read local files
+    	local_root.name = "localroot";
+    	local_root.children = new ArrayList<Node>();
+    	current_dir = local_root;
+    }
+
+    // Must be run in non-GUI thread
+    private void loadRemoteSongs() {
     	try{
     	    // Create a new HTTP Client
     	    DefaultHttpClient defaultClient = new DefaultHttpClient();
@@ -90,8 +115,8 @@ public class PlayerActivity extends Activity
     	    
     	    // Instantiate a JSON array from the request response
     	    JSONObject json = new JSONObject(sb.toString());
-            root = Node.read( json );
-            current_dir = root;
+            remote_root = Node.read( json );
+            current_dir = remote_root;
 
     	} catch(Exception e){
     	    // TODO In your production code handle any errors and catch the individual exceptions
@@ -142,5 +167,12 @@ public class PlayerActivity extends Activity
 	public void setCurrentDirectory(Node node) {
 		current_dir = node;
 		showSongList();
+	}
+
+	public void onToggleButtonChanged(String button_tag) {
+		boolean new_use_local = (button_tag == "local");
+		if(new_use_local != use_local) {
+			setLocal(new_use_local);
+		}
 	}
 }
