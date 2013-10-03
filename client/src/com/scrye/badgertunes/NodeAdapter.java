@@ -33,10 +33,18 @@ public class NodeAdapter extends ArrayAdapter<Node> {
 	        view = inflater.inflate(layout_id, null);
 	    }
 		ItemButton title_view = (ItemButton) view.findViewById(R.id.title);
-		Node node = getItem(position);
+		final Node node = getItem(position);
 	    title_view.setNode(node);
 	    
-	    // ImageButton download_button = (ImageButton) view.findViewById(R.id.download_button);
+	    if(!use_local) {
+	    	ImageButton download_button = (ImageButton) view.findViewById(R.id.download_button);
+	    	download_button.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					player.downloadNode(node);
+				}
+	    	});
+	    }
 	    // ImageButton play_button = (ImageButton) view.findViewById(R.id.play_button);
 	    
 		return view;

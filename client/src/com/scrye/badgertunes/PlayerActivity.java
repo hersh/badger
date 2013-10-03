@@ -23,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 public class PlayerActivity extends Activity
 	                        implements ListView.OnItemClickListener {
@@ -32,6 +33,8 @@ public class PlayerActivity extends Activity
     private Node local_root;
     private Node current_dir;
     private boolean use_local;
+    public String remote_address = "http://10.1.10.9:8080";
+    public File local_root_dir = new File(Environment.getExternalStorageDirectory(), "badgertunes");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,9 +91,7 @@ public class PlayerActivity extends Activity
 
     // Must be run in non-GUI thread
     private void loadLocalSongs() {
-        File sdcard = Environment.getExternalStorageDirectory();
-        File root_dir = new File(sdcard, "badgertunes");
-        local_root = Node.readLocal(root_dir);
+        local_root = Node.readLocal(local_root_dir);
         if(local_root.children == null) {
         	local_root.children = new ArrayList<Node>();
         }
@@ -121,7 +122,7 @@ public class PlayerActivity extends Activity
     	    // Create a new HTTP Client
     	    DefaultHttpClient defaultClient = new DefaultHttpClient();
     	    // Setup the get request
-    	    HttpGet httpGetRequest = new HttpGet("http://10.1.10.9:8080/list");
+    	    HttpGet httpGetRequest = new HttpGet(remote_address + "/list");
 
     	    // Execute the request in the client
     	    HttpResponse httpResponse = defaultClient.execute(httpGetRequest);
@@ -198,5 +199,12 @@ public class PlayerActivity extends Activity
 				setCurrentDirectory(node);
 			}
 		}
+	}
+	
+	// Call this from GUI thread, and it spawns a thread which recursively downloads node.
+	public void downloadNode(Node node) {
+		Toast.makeText(this, "Downloading " + node.filename, Toast.LENGTH_SHORT).show();
+		// Start lengthy operation in a background thread
+        new DownloadFilesTask(this, node).execute();
 	}
 }
