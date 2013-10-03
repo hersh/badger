@@ -5,22 +5,22 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 
-public class ClickableNodeText extends Button implements Button.OnClickListener {
+public class ItemButton extends Button implements Button.OnClickListener {
 
 	private PlayerActivity player;
 	private Node node;
 	
-	public ClickableNodeText(Context context, AttributeSet attrs) {
+	public ItemButton(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init(context);
 	}
 
-	public ClickableNodeText(Context context) {
+	public ItemButton(Context context) {
 		super(context);
 		init(context);
 	}
 
-	public ClickableNodeText(Context context, AttributeSet attrs, int defStyle) {
+	public ItemButton(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init(context);
 	}

@@ -155,7 +155,7 @@ public class PlayerActivity extends Activity
     	}
     	
     	// set up main list of songs or directories
-    	NodeAdapter adapter = new NodeAdapter(this, R.id.title, current_dir.children);
+    	NodeAdapter adapter = new NodeAdapter(this, R.id.title, current_dir.children, use_local);
         ListView song_list_view = (ListView) findViewById(R.id.song_list);
     	song_list_view.setAdapter(adapter);
     	song_list_view.setOnItemClickListener(this);

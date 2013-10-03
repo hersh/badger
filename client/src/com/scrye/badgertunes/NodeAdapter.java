@@ -7,17 +7,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
+import android.widget.ImageButton;
 
 public class NodeAdapter extends ArrayAdapter<Node> {
 
 	private PlayerActivity player;
+	private boolean use_local;
 	
 	public NodeAdapter(PlayerActivity _player,
 				       int textViewResourceId,
-			           List<Node> objects) {
+			           List<Node> objects,
+			           boolean _use_local) {
 		super(_player, textViewResourceId, objects);
 		player = _player;
+		use_local = _use_local;
 	}
 
 	@Override
@@ -25,12 +28,17 @@ public class NodeAdapter extends ArrayAdapter<Node> {
 	{
 		View view = convertView;
 		if(view == null) {
+			int layout_id = use_local ? R.layout.local_song_item : R.layout.remote_song_item;
 			LayoutInflater inflater = (LayoutInflater) player.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-	        view = inflater.inflate(R.layout.song_item, null);
+	        view = inflater.inflate(layout_id, null);
 	    }
-		ClickableNodeText title_view = (ClickableNodeText) view.findViewById(R.id.title);
+		ItemButton title_view = (ItemButton) view.findViewById(R.id.title);
 		Node node = getItem(position);
 	    title_view.setNode(node);
+	    
+	    // ImageButton download_button = (ImageButton) view.findViewById(R.id.download_button);
+	    // ImageButton play_button = (ImageButton) view.findViewById(R.id.play_button);
+	    
 		return view;
 	}
 }
