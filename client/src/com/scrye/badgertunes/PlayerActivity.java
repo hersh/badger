@@ -58,6 +58,11 @@ public class PlayerActivity extends Activity
        	LinearLayout parent_dirs_layout = (LinearLayout) findViewById(R.id.parent_dirs);
     	parent_dirs_layout.removeAllViews();
     	
+    	// make sure previous visible list disappears while loading the new one.
+    	NodeAdapter adapter = new NodeAdapter(this, R.id.title, new ArrayList<Node>(), use_local);
+        ListView song_list_view = (ListView) findViewById(R.id.song_list);
+    	song_list_view.setAdapter(adapter);
+
     	showLoading();
 
         // Start lengthy operation in a background thread
