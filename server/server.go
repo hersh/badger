@@ -81,6 +81,7 @@ func (ms *MusicService) ScanMusic() {
 }
 
 func (ms *MusicService) listHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("got url path '%s'.\n", r.URL.Path)
 	json_data, err := json.MarshalIndent(ms.song_tree, "", " ")
 	if err != nil {
 		fmt.Fprintf(w, "Error encoding data: %s\n", err.Error())
@@ -90,6 +91,7 @@ func (ms *MusicService) listHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ms *MusicService) getHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("got url path '%s'.\n", r.URL.Path)
 	filename := ms.music_path_root + "/" + r.URL.Path[5:] // 5 is length of '/get/'
 	file, err := os.Open(filename)
 	if err != nil {
@@ -108,6 +110,11 @@ func (ms *MusicService) getHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, file)
 }
 
+func (ms *MusicService) badRequestHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "404 Error: url '%s' not supported.", r.URL.String())
+	fmt.Printf("got url path '%s'.\n", r.URL.Path)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		panic(fmt.Sprintf("Usage: %s path/to/music", os.Args[0]))
@@ -118,5 +125,6 @@ func main() {
 
 	http.HandleFunc("/list", service.listHandler)
 	http.HandleFunc("/get/", service.getHandler)
+	http.HandleFunc("/", service.badRequestHandler)
 	http.ListenAndServe(":8080", nil)
 }

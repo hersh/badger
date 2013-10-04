@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -65,7 +66,8 @@ public class DownloadFilesTask extends AsyncTask<Void, Integer, String> {
             OutputStream output = null;
             HttpURLConnection connection = null;
             try {
-                URL url = new URL(player.remote_address + "/get/" + file_node.filename);
+            	String encoded_filename = URLEncoder.encode(file_node.filename, "UTF-8");
+                URL url = new URL(player.remote_address + "/get/" + encoded_filename);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
 
