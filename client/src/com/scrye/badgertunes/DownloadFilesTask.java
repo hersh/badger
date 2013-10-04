@@ -13,7 +13,7 @@ import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.widget.Toast;
 
-public class DownloadFilesTask extends AsyncTask<Void, Integer, Void> {
+public class DownloadFilesTask extends AsyncTask<Void, Integer, String> {
 	PlayerActivity player;
 	Node root_node;
 	
@@ -22,9 +22,8 @@ public class DownloadFilesTask extends AsyncTask<Void, Integer, Void> {
 		root_node = _root_node;
 	}
 	@Override
-    protected Void doInBackground(Void... inputs) {
-        downloadNode(root_node);
-        return null;
+    protected String doInBackground(Void... inputs) {
+        return downloadNode(root_node);
     }
 	
 	@Override
@@ -32,8 +31,12 @@ public class DownloadFilesTask extends AsyncTask<Void, Integer, Void> {
     }
 	
 	@Override
-    protected void onPostExecute(Void result) {
-        Toast.makeText(player, "Done downloading " + root_node.filename, Toast.LENGTH_SHORT).show();
+    protected void onPostExecute(String result) {
+		if(result != null) {
+			Toast.makeText(player, result, Toast.LENGTH_LONG).show();
+		} else {
+			Toast.makeText(player, "Done downloading " + root_node.filename, Toast.LENGTH_SHORT).show();
+		}
     }
 	
 	private String downloadNode(Node node) {

@@ -154,9 +154,14 @@ public class PlayerActivity extends Activity
     		DirectoryButton dir_button = new DirectoryButton(this, parents.get(i));
     		parent_dirs_layout.addView(dir_button);
     	}
-    	
+    	ArrayList<Node> list_to_display;
+    	if(current_dir == null || current_dir.children == null)	{
+    		list_to_display = new ArrayList<Node>();
+    	} else {
+    		list_to_display = current_dir.children;
+    	}
     	// set up main list of songs or directories
-    	NodeAdapter adapter = new NodeAdapter(this, R.id.title, current_dir.children, use_local);
+    	NodeAdapter adapter = new NodeAdapter(this, R.id.title, list_to_display, use_local);
         ListView song_list_view = (ListView) findViewById(R.id.song_list);
     	song_list_view.setAdapter(adapter);
     	song_list_view.setOnItemClickListener(this);
@@ -206,5 +211,10 @@ public class PlayerActivity extends Activity
 		Toast.makeText(this, "Downloading " + node.filename, Toast.LENGTH_SHORT).show();
 		// Start lengthy operation in a background thread
         new DownloadFilesTask(this, node).execute();
+	}
+	
+	// Call this from GUI thread.
+	public void playNode(Node node) {
+		Toast.makeText(this,  "Playing " + node.filename, Toast.LENGTH_SHORT).show();
 	}
 }

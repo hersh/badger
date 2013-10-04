@@ -44,9 +44,15 @@ public class NodeAdapter extends ArrayAdapter<Node> {
 					player.downloadNode(node);
 				}
 	    	});
+	    } else {
+	    	ImageButton play_button = (ImageButton) view.findViewById(R.id.play_button);
+	    	play_button.setOnClickListener(new View.OnClickListener() {
+	    		@Override
+	    		public void onClick(View v) {
+	    			player.playNode(node);
+	    		}
+	    	});
 	    }
-	    // ImageButton play_button = (ImageButton) view.findViewById(R.id.play_button);
-	    
 		return view;
 	}
 }
