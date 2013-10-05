@@ -8,6 +8,8 @@ import android.os.Environment;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Node {
     public String name;
@@ -50,6 +52,7 @@ public class Node {
                     }
                 } catch( JSONException ex ) {}
             }
+            sortNodes(node.children);
         }
         return node;
     }
@@ -69,8 +72,18 @@ public class Node {
         				child.parent = node;
         			}
         		}
+        		sortNodes(node.children);
         	}
         }
         return node;
+    }
+    
+    static public void sortNodes(ArrayList<Node> nodes) {
+    	Collections.sort(nodes, new Comparator<Node>() {
+			@Override
+			public int compare(Node a, Node b) {
+				return a.name.compareToIgnoreCase(b.name);
+			}
+    	});
     }
 }
