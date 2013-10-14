@@ -4,8 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.os.Environment;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;

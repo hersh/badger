@@ -69,12 +69,6 @@
             android:src="@drawable/ic_action_play" />
 
         <ImageButton
-            android:id="@+id/stop_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_action_stop" />
-
-        <ImageButton
             android:id="@+id/next_song_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
