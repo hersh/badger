@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -49,16 +50,17 @@ public class PlayerActivity extends Activity implements
 		tree_chooser_bar.addButton("local", "Local", false);
 		tree_chooser_bar.addButton("remote", "Remote", true);
 		tree_chooser_bar.setListener(this);
+		player.connectButtons();
 
 		setLocal(false);
 		
 		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 20, 0);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 2/*20*/, 0);
 	}
 
 	private void setLocal(boolean _use_local) {
 		use_local = _use_local;
-		fillDirectoryBrowser();
+		fillDirectoryBrowser(); 
 	}
 
 	private void fillDirectoryBrowser() {
@@ -208,6 +210,9 @@ public class PlayerActivity extends Activity implements
 
 	public void setCurrentDirectory(Node node) {
 		current_dir = node;
+		if(player.getSource() != null) {
+			showCurrentPlayingSong(player.getSource().getCurrentSong());
+		}
 		showSongList();
 	}
 
@@ -242,6 +247,14 @@ public class PlayerActivity extends Activity implements
 					.show();
 			player.setSource(new NodeSource(node));
 			player.play();
+		}
+	}
+	
+	public void showCurrentPlayingSong(Node current_node) {
+		if(current_node.parent == current_dir) {
+			int current_index = current_dir.children.indexOf(current_node);
+			ListView song_list_view = (ListView) findViewById(R.id.song_list);
+			song_list_view.setSelection(current_index);
 		}
 	}
 }
