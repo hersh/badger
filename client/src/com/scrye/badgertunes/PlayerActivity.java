@@ -255,19 +255,20 @@ public class PlayerActivity extends Activity implements
 
 	// Call this from GUI thread.
 	public void playNode(Node node) {
-		if (node.children == null) {
-			Toast.makeText(this, "Playing " + node.filename, Toast.LENGTH_SHORT)
-					.show();
-			player.setSource(new NodeSource(node));
-			player.play();
-		}
+		Toast.makeText(this, "Playing " + node.filename, Toast.LENGTH_SHORT)
+				.show();
+		player.setSource(new NodeSource(node));
+		player.play();
 	}
 	
 	public void showCurrentPlayingSong(Node current_node) {
+		ListView song_list_view = (ListView) findViewById(R.id.song_list);
+
 		if(current_node.parent == current_dir) {
 			int current_index = current_dir.children.indexOf(current_node);
-			ListView song_list_view = (ListView) findViewById(R.id.song_list);
 			song_list_view.setItemChecked(current_index, true);
+		} else {
+			song_list_view.setItemChecked(song_list_view.getCheckedItemPosition(), false);
 		}
 	}
 	

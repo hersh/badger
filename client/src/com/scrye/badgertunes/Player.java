@@ -94,7 +94,7 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 		return source;
 	}
 	
-	private void setupCurrentSong() {
+	private boolean setupCurrentSong() {
 		pa.showCurrentPlayingSong(source.getCurrentSong());
 
 		if (!song_set_up) {
@@ -105,6 +105,7 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 				Log.w("Player", "setDataSource(" + filename + ")");
 				song_set_up = true;
 				prepared = false;
+				return true;
 			} catch (IllegalArgumentException e) {
 				pa.showError(e.getMessage());
 				e.printStackTrace();
@@ -118,7 +119,9 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 				pa.showError(e.getMessage());
 				e.printStackTrace();
 			}
+			return false;
 		}
+		return true;
 	}
 
 	public void play() {
@@ -126,13 +129,14 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 			return;
 		}
 		setPlayButtonState(false);
-		setupCurrentSong();
-		if (prepared) {
-			Log.w("Player", "start()");
-			media_player.start();
-		} else {
-			Log.w("Player", "prepareAsync()");
-			media_player.prepareAsync();
+		if (setupCurrentSong()) {
+			if (prepared) {
+				Log.w("Player", "start()");
+				media_player.start();
+			} else {
+				Log.w("Player", "prepareAsync()");
+				media_player.prepareAsync();
+			}
 		}
 	}
 
