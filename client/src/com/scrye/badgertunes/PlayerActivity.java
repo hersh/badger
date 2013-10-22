@@ -39,7 +39,7 @@ public class PlayerActivity extends Activity implements
 	public String remote_address = "http://10.1.10.9:8080";
 	public File local_root_dir = new File(
 			Environment.getExternalStorageDirectory(), "badgertunes");
-	private Player player = new Player(this);
+	private Player player;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,12 +50,25 @@ public class PlayerActivity extends Activity implements
 		tree_chooser_bar.addButton("local", "Local", false);
 		tree_chooser_bar.addButton("remote", "Remote", true);
 		tree_chooser_bar.setListener(this);
-		player.connectButtons();
 
 		setLocal(false);
 		
 		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 2/*20*/, 0);
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		player = new Player(this);
+		player.connectButtons();
+	}
+	
+	@Override
+	protected void onStop() {
+		player.kill();
+		player = null;
+		super.onStop();
 	}
 
 	private void setLocal(boolean _use_local) {
@@ -210,10 +223,10 @@ public class PlayerActivity extends Activity implements
 
 	public void setCurrentDirectory(Node node) {
 		current_dir = node;
+		showSongList();
 		if(player.getSource() != null) {
 			showCurrentPlayingSong(player.getSource().getCurrentSong());
 		}
-		showSongList();
 	}
 
 	public void onToggleButtonChanged(String button_tag) {
@@ -254,7 +267,11 @@ public class PlayerActivity extends Activity implements
 		if(current_node.parent == current_dir) {
 			int current_index = current_dir.children.indexOf(current_node);
 			ListView song_list_view = (ListView) findViewById(R.id.song_list);
-			song_list_view.setSelection(current_index);
+			song_list_view.setItemChecked(current_index, true);
 		}
+	}
+	
+	public void showError(String error) {
+		Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
 	}
 }

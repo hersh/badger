@@ -33,6 +33,11 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 		media_player.setVolume(1,  1);
 	}
 	
+	public void kill() {
+		media_player.release();
+		media_player = null;
+	}
+	
 	private void setPlayButtonState(boolean state) {
 		play_button_looks_like_play = state;
 		if(play_button_looks_like_play) {
@@ -77,9 +82,7 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 	}
 
 	public void setSource(SongIterator _source) {
-		if (media_player.isPlaying()) {
-			media_player.stop();
-		}
+		media_player.stop();
 		source = _source;
 		setupCurrentSong();
 		play_pause_button.setEnabled(true);
@@ -103,16 +106,16 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 				song_set_up = true;
 				prepared = false;
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
+				pa.showError(e.getMessage());
 				e.printStackTrace();
 			} catch (SecurityException e) {
-				// TODO Auto-generated catch block
+				pa.showError(e.getMessage());
 				e.printStackTrace();
 			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
+				pa.showError(e.getMessage());
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				pa.showError(e.getMessage());
 				e.printStackTrace();
 			}
 		}
