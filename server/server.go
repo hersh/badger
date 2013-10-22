@@ -95,15 +95,18 @@ func (ms *MusicService) getHandler(w http.ResponseWriter, r *http.Request) {
 	filename := ms.music_path_root + "/" + r.URL.Path[5:] // 5 is length of '/get/'
 	file, err := os.Open(filename)
 	if err != nil {
+		w.WriteHeader(404)
 		fmt.Fprintf(w, "404 Error: %s\n", err.Error())
                 return
 	}
 	fileinfo, err := file.Stat()
 	if err != nil {
+		w.WriteHeader(404)
 		fmt.Fprintf(w, "404 Error: %s\n", err.Error())
                 return
 	}
 	if fileinfo.IsDir() {
+		w.WriteHeader(404)
 		fmt.Fprintf(w, "404 Error: %s is a directory, not a file\n", filename)
                 return
 	}
