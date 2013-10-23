@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -93,6 +94,7 @@ func (ms *MusicService) listHandler(w http.ResponseWriter, r *http.Request) {
 func (ms *MusicService) getHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got url path '%s'.\n", r.URL.Path)
 	filename := ms.music_path_root + "/" + r.URL.Path[5:] // 5 is length of '/get/'
+	filename = strings.Replace(filename, "+", " ", -1)
 	file, err := os.Open(filename)
 	if err != nil {
 		w.WriteHeader(404)
