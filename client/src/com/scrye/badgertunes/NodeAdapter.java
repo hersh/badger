@@ -52,6 +52,14 @@ public class NodeAdapter extends ArrayAdapter<Node> {
 	    			player.playNode(node);
 	    		}
 	    	});
+
+	    	ImageButton tags_button = (ImageButton) view.findViewById(R.id.tags_button);
+	    	tags_button.setOnClickListener(new View.OnClickListener() {
+	    		@Override
+	    		public void onClick(View v) {
+	    			player.editTagsForNode(node);
+	    		}
+	    	});
 	    }
 		return view;
 	}

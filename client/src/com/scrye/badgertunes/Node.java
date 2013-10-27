@@ -8,12 +8,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 public class Node {
     public String name;
     public String filename;
     public ArrayList<Node> children;
     public Node parent;
+    public HashMap<String,Boolean> tags;
     
     public String toString() {
     	return name;

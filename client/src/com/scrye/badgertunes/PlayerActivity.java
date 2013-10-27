@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -40,7 +42,16 @@ public class PlayerActivity extends Activity implements
 	public File local_root_dir = new File(
 			Environment.getExternalStorageDirectory(), "badgertunes");
 	private Player player;
+	private Set<String> all_tags = new TreeSet<String>();
 
+	public Node getLocalRoot() {
+		return local_root;
+	}
+	
+	public Set<String> getAllTags() {
+		return all_tags;
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -274,5 +285,10 @@ public class PlayerActivity extends Activity implements
 	
 	public void showError(String error) {
 		Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+	}
+	
+	public void editTagsForNode(Node node) {
+		ApplyTagDialog dialog_fragment = ApplyTagDialog.create(node);
+	    dialog_fragment.show(getFragmentManager(), "dialog");
 	}
 }
