@@ -58,11 +58,11 @@ public class PlayerActivity extends Activity implements
 		setContentView(R.layout.main);
 
 		ToggleButtonBar tree_chooser_bar = (ToggleButtonBar) findViewById(R.id.tree_chooser_bar);
-		tree_chooser_bar.addButton("local", "Local", false);
-		tree_chooser_bar.addButton("remote", "Remote", true);
+		tree_chooser_bar.addButton("local", "Local", true);
+		tree_chooser_bar.addButton("remote", "Remote", false);
 		tree_chooser_bar.setListener(this);
 
-		setLocal(false);
+		setLocal(true);
 		
 		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 2/*20*/, 0);

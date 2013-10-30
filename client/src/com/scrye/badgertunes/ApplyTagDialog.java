@@ -1,16 +1,22 @@
 package com.scrye.badgertunes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 import android.app.DialogFragment;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.SparseBooleanArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,6 +26,7 @@ public class ApplyTagDialog extends DialogFragment {
 	private Node node;
 	private PlayerActivity pa;
 	private Set<String> all_tags;
+	private ArrayList<String> tag_array = new ArrayList<String>();
 	private View view;
 	
 	public static ApplyTagDialog create(Node node) {
@@ -77,6 +84,23 @@ public class ApplyTagDialog extends DialogFragment {
         ListView tag_list_view = (ListView) view.findViewById(R.id.tag_list);
         tag_list_view.setEmptyView(no_tags_text_view);
         
+        Button cancel = (Button) view.findViewById(R.id.cancel);
+        cancel.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View button) {
+				dismiss();
+			}
+        });
+
+        Button done = (Button) view.findViewById(R.id.done);
+        done.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View button) {
+				writeTagsToNode();
+				dismiss();
+			}
+        });
+        
         all_tags = pa.getAllTags();
         showTags();
         
@@ -88,6 +112,9 @@ public class ApplyTagDialog extends DialogFragment {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     addTag(v.getText().toString());
                     v.setText("");
+                    // hide the keyboard
+                    InputMethodManager inputManager = (InputMethodManager) pa.getSystemService(Context.INPUT_METHOD_SERVICE); 
+                    inputManager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
                     handled = true;
                 }
                 return handled;
@@ -96,13 +123,37 @@ public class ApplyTagDialog extends DialogFragment {
         
         return view;
     }
+    
+    private void writeTagsToNode() {
+    	HashMap<String, Boolean> node_tags = new HashMap<String, Boolean>();
+        ListView tag_list_view = (ListView) view.findViewById(R.id.tag_list);
+		SparseBooleanArray checked_positions = tag_list_view.getCheckedItemPositions();
+		for(int i = 0; i < checked_positions.size(); i++) {
+			node_tags.put(tag_array.get(i), checked_positions.get(i));
+		}
+		node.writeTags(node_tags);
+    }
+    
+    private void readTagsFromNode() {
+    	ListView tag_list_view = (ListView) view.findViewById(R.id.tag_list);
+		
+    	HashMap<String, Boolean> node_tags = node.readTags();
+    	int position = 0;
+    	for(String tag: all_tags) {
+    		Boolean value = node_tags.get(tag);
+    		boolean bool_val = (value != null && value.booleanValue() == true);
+    		tag_list_view.setItemChecked(position, bool_val);
+    		position++;
+    	}
+    }
 
     private void showTags() {
-        ArrayList<String> tags = new ArrayList<String>();
-        tags.addAll(all_tags);
+        tag_array.clear();
+        tag_array.addAll(all_tags);
         ListView tag_list_view = (ListView) view.findViewById(R.id.tag_list);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(pa, android.R.layout.simple_list_item_1, tags);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(pa, android.R.layout.simple_list_item_multiple_choice, tag_array);
         tag_list_view.setAdapter(adapter);
+        readTagsFromNode();
     }
 
     public void addTag(String new_tag) {

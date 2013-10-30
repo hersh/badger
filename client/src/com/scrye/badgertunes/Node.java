@@ -9,18 +9,65 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Node {
     public String name;
     public String filename;
     public ArrayList<Node> children;
     public Node parent;
-    public HashMap<String,Boolean> tags;
+    public HashMap<String,Boolean> tags = new HashMap<String,Boolean>();
     
     public String toString() {
     	return name;
     }
-
+    
+    public void writeTags(HashMap<String,Boolean> tag_values) {
+    	// Clear all tags and re-write them based on tag_values and parents' tags.
+    	tags.clear();
+    	
+    	// Loop over all tags in the incoming map
+    	for(Map.Entry<String, Boolean> entry : tag_values.entrySet()) {
+    	    String tag = entry.getKey();
+    	    boolean value = entry.getValue().booleanValue();
+    	    
+    	    // For each tag, go up the Node tree to see what the parents think of it.
+    	    Node node = this;
+    	    while(node != null) {
+    	    	Boolean tag_val = node.tags.get(tag);
+    	    	if(tag_val != null) {
+    	    		// Only store this tag locally if the parent's version is different.
+    	    		if(tag_val.booleanValue() != value) {
+    	    			tags.put(tag, value);
+    	    		}
+        	    	// The first parent we find with an opinion is the only one we care about.
+    	    		break;
+    	    	}
+    	    	node = node.parent;
+    	    }
+    	    // If we got to the root without seeing this tag and it's positive, add it in.
+    	    if(node == null && value == true) {
+    	    	tags.put(tag, value);
+    	    }
+    	}
+    }
+    
+    public HashMap<String,Boolean> readTags() {
+    	HashMap<String, Boolean> result = new HashMap<String, Boolean>();
+	    Node node = this;
+	    while(node != null) {
+	       	for(Map.Entry<String, Boolean> entry : node.tags.entrySet()) {
+	    	    String tag = entry.getKey();
+	    	    boolean value = entry.getValue().booleanValue();
+	    	    if(result.get(tag) == null) {
+	    	    	result.put(tag, value);
+	    	    }
+	       	}
+	    	node = node.parent;
+	    }    	
+    	return result;
+    }
+    
     static public String nameFromFilename(String filename) {
     	String[] path_elements = filename.split("/");
     	return path_elements[path_elements.length - 1];
