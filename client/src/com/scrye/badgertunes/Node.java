@@ -4,7 +4,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
+
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,6 +57,80 @@ public class Node {
     	    	tags.put(tag, value);
     	    }
     	}
+    	
+    	writeTagsToFile();
+    }
+    
+    public static String readFile( String filePath ) throws IOException {
+        Reader reader = new FileReader( filePath );
+        StringBuilder sb = new StringBuilder(); 
+        char buffer[] = new char[16384];  // read 16k blocks
+        int len; // how much content was read? 
+        while( ( len = reader.read( buffer ) ) > 0 ){
+            sb.append( buffer, 0, len ); 
+        }
+        reader.close();
+        return sb.toString();
+    }
+    
+    // Tag file format: (json)
+    // this_dir: {tag1: true, tag2: false},
+    // filename.mp3: {tag2: true, tag3: true},
+    // other_file.mp3: {tag1: false}
+    private void writeTagsToFile() {
+    	String tagfile;
+    	if(children == null) {
+    		tagfile = parent.filename;
+    	} else {
+    		tagfile = filename;
+    	}
+    	tagfile += "/tags";
+    	JSONObject json = null;
+    	try {
+			String tagfile_contents = readFile(tagfile);
+			json = new JSONObject(tagfile_contents);
+		} catch (IOException e) {
+		} catch (JSONException e) {
+		}
+    	if(json == null) {
+    		json = new JSONObject();
+    	}
+    	String key;
+    	if(children == null) {
+    		key = name;
+    	} else {
+    		key = "this_dir";
+    	}
+    	JSONObject tags_json = new JSONObject();
+    	for(Map.Entry<String, Boolean> entry : tags.entrySet()) {
+    	    String tag = entry.getKey();
+    	    boolean value = entry.getValue().booleanValue();
+    	    try {
+				tags_json.put(tag, value);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	try {
+			json.put(key, tags_json);
+			String json_string_out = json.toString(2);
+			writeFile(json_string_out, tagfile);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    private void writeFile(String data, String file_path) {
+        try {
+        	FileWriter writer = new FileWriter(file_path);
+            writer.write(data);
+            writer.close();
+        }
+        catch (IOException e) {
+			e.printStackTrace();
+        } 
     }
     
     public HashMap<String,Boolean> readTags() {
