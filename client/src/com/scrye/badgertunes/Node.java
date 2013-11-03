@@ -16,7 +16,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class Node {
     public String name;
@@ -27,6 +30,23 @@ public class Node {
     
     public String toString() {
     	return name;
+    }
+    
+    /** @brief Recursively scan this tag and all its children, adding positive tags to tag_set. */
+    public void fillTagSet(Set<String> tag_set) {
+    	// Harvest all the positive tag keys in this node.
+    	for(Map.Entry<String, Boolean> entry : tags.entrySet()) {
+    	    String tag = entry.getKey();
+    	    if(entry.getValue().booleanValue() == true) {
+    	    	tag_set.add(tag);
+    	    }
+    	}
+    	// recursively call this on all children
+    	if(children != null) {	
+    		for(Node child : children) {
+    			child.fillTagSet(tag_set);
+    		}
+    	}
     }
     
     public void writeTags(HashMap<String,Boolean> tag_values) {
@@ -133,6 +153,7 @@ public class Node {
         } 
     }
     
+    /** @brief Read the tags from a Node object and return them as a simple HashMap. */
     public HashMap<String,Boolean> readTags() {
     	HashMap<String, Boolean> result = new HashMap<String, Boolean>();
 	    Node node = this;
@@ -185,11 +206,38 @@ public class Node {
         return node;
     }
     
+    private void setTagsFromJSON(JSONObject tags_json) {
+		Iterator<?> keys = tags_json.keys();
+		while(keys.hasNext()) {
+			String tag = (String) keys.next();
+			boolean value;
+			try {
+				value = tags_json.getBoolean(tag);
+				tags.put(tag, value);
+			} catch (JSONException e) {
+			}
+		}
+    }
+    
     static public Node readLocal(File file) {
         Node node = new Node();
         node.filename = file.getPath();
         node.name = file.getName();
+        if(node.name.equals("tags")) {
+        	return null;
+        }
         if(file.isDirectory()) {
+        	JSONObject tags_json = null;
+        	try {
+        		String tagfile = node.filename + "/tags";
+        		String tagfile_contents = readFile(tagfile);
+    			tags_json = new JSONObject(tagfile_contents);
+    			JSONObject this_dir_tags_json = tags_json.getJSONObject("this_dir");
+    			node.setTagsFromJSON(this_dir_tags_json);
+    		} catch (IOException e) {
+    		} catch (JSONException e) {
+    		}
+        	
         	File[] files = file.listFiles();
         	if(files != null && files.length > 0) {
         		node.children = new ArrayList<Node>(files.length);
@@ -198,6 +246,15 @@ public class Node {
         			if(child != null) {
         				node.children.add(child);
         				child.parent = node;
+        				// Tags for song files are stored in the tags file in the containing directory.
+        				// We've already read that file into tags_json, so look up any tags for this song in it.
+        				if(child.children == null && tags_json != null) {
+        					try {
+        						JSONObject child_tags_json = tags_json.getJSONObject(child.name);
+        						child.setTagsFromJSON(child_tags_json);
+        					} catch (JSONException e) {
+        					}
+        				}
         			}
         		}
         		sortNodes(node.children);

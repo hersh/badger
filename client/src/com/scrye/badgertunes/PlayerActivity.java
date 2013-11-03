@@ -137,6 +137,7 @@ public class PlayerActivity extends Activity implements
 			local_root.children = new ArrayList<Node>();
 		}
 		current_dir = local_root;
+		local_root.fillTagSet(all_tags);
 	}
 
 	private void showLoading() {
