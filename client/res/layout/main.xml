@@ -9,12 +9,22 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".PlayerActivity" >
-
-    <com.scrye.badgertunes.ToggleButtonBar
-        android:id="@+id/tree_chooser_bar"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
+        android:layout_height="wrap_content">
+        <com.scrye.badgertunes.ToggleButtonBar
+            android:id="@+id/tree_chooser_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter:"/>
+        <Spinner android:id="@+id/filter_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
     <HorizontalScrollView
         android:id="@+id/parent_dirs_scroller"
         android:layout_width="match_parent"

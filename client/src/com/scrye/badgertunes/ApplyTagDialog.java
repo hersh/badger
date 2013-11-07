@@ -160,6 +160,7 @@ public class ApplyTagDialog extends DialogFragment {
     	if(new_tag != null && new_tag.length() > 0) {
     		all_tags.add(new_tag);
     		showTags();
+    		pa.onTagsChanged();
     	}
     }
 }

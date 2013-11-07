@@ -24,10 +24,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 public class PlayerActivity extends Activity implements
@@ -43,7 +46,9 @@ public class PlayerActivity extends Activity implements
 			Environment.getExternalStorageDirectory(), "badgertunes");
 	private Player player;
 	private Set<String> all_tags = new TreeSet<String>();
-
+	private ArrayList<String> filter_options;
+	private String current_filter_tag = "None";
+	
 	public Node getLocalRoot() {
 		return local_root;
 	}
@@ -63,9 +68,22 @@ public class PlayerActivity extends Activity implements
 		tree_chooser_bar.setListener(this);
 
 		setLocal(true);
-		
-		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 2/*20*/, 0);
+
+		Spinner filter_spinner = (Spinner) findViewById(R.id.filter_spinner);
+		filter_spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				filterByTag(filter_options.get(position));
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				filterByTag("None");
+			}
+			
+		});
+		// AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		// audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 2/*20*/, 0);
 	}
 	
 	@Override
@@ -82,6 +100,21 @@ public class PlayerActivity extends Activity implements
 		super.onStop();
 	}
 
+	private void filterByTag(String tag) {
+		if(tag.equals(current_filter_tag)) {
+			return;
+		}
+		showError("filtering by tag " + tag);
+		current_filter_tag = tag;
+		while(current_dir != null &&
+				current_dir != local_root &&
+				current_dir != remote_root &&
+				current_dir.filterChildren(tag).size() == 0) {
+			current_dir = current_dir.parent;
+		}
+		showSongList();
+	}
+	
 	private void setLocal(boolean _use_local) {
 		use_local = _use_local;
 		fillDirectoryBrowser(); 
@@ -113,6 +146,7 @@ public class PlayerActivity extends Activity implements
 				handler.post(new Runnable() {
 					public void run() {
 						showSongList();
+						onTagsChanged();
 					}
 				});
 			}
@@ -203,7 +237,7 @@ public class PlayerActivity extends Activity implements
 		if (current_dir == null || current_dir.children == null) {
 			list_to_display = new ArrayList<Node>();
 		} else {
-			list_to_display = current_dir.children;
+			list_to_display = current_dir.filterChildren(current_filter_tag);
 		}
 		// set up main list of songs or directories
 		NodeAdapter adapter = new NodeAdapter(this, R.id.title,
@@ -213,6 +247,19 @@ public class PlayerActivity extends Activity implements
 		song_list_view.setOnItemClickListener(this);
 
 		showEmpty();
+	}
+	
+	public void onTagsChanged() {
+		Spinner filter_spinner = (Spinner) findViewById(R.id.filter_spinner);
+		filter_spinner.setEnabled(use_local); // remote tags not supported yet
+		filter_options = new ArrayList<String>();
+		filter_options.add("None");
+		if(use_local) {
+			filter_options.addAll(all_tags);
+		}
+		ArrayAdapter<String> filter_adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, filter_options);
+		filter_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		filter_spinner.setAdapter(filter_adapter);
 	}
 
 	@Override

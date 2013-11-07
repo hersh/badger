@@ -32,6 +32,33 @@ public class Node {
     	return name;
     }
     
+    public ArrayList<Node> filterChildren(String tag) {
+    	ArrayList<Node> result = new ArrayList<Node>();
+    	if(tag == "None") {
+    		return children;
+    	}
+    	if(children != null) {
+    		for(Node child: children) {
+    			if(child.hasTag(tag) || child.filterChildren(tag).size() > 0) {
+    				result.add(child);
+    			}
+    		}
+    	}
+    	return result;
+    }
+    
+    public boolean hasTag(String tag) {
+    	Node node = this;
+	    while(node != null) {
+	    	Boolean value = node.tags.get(tag);
+	    	if(value != null) {
+	    		return value.booleanValue();
+	    	}
+	    	node = node.parent;
+	    }
+	    return false;
+    }
+    
     /** @brief Recursively scan this tag and all its children, adding positive tags to tag_set. */
     public void fillTagSet(Set<String> tag_set) {
     	// Harvest all the positive tag keys in this node.

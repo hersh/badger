@@ -4,9 +4,9 @@ import java.io.IOException;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 
 // Class for managing playing of music.
@@ -27,6 +27,7 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 	public Player(PlayerActivity _pa) {
 		pa = _pa;
 		media_player = new MediaPlayer();
+		media_player.setWakeMode(pa, PowerManager.PARTIAL_WAKE_LOCK);
 		media_player.setOnPreparedListener(this);
 		media_player.setOnCompletionListener(this);
 		media_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
