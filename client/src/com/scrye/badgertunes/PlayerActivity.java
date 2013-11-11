@@ -110,7 +110,7 @@ public class PlayerActivity extends Activity implements
 				current_dir != local_root &&
 				current_dir != remote_root &&
 				current_dir.filterChildren(tag).size() == 0) {
-			current_dir = current_dir.parent;
+			current_dir = current_dir.getParent();
 		}
 		showSongList();
 	}
@@ -166,10 +166,7 @@ public class PlayerActivity extends Activity implements
 
 	// Must be run in non-GUI thread
 	private void loadLocalSongs() {
-		local_root = Node.readLocal(local_root_dir);
-		if (local_root.children == null) {
-			local_root.children = new ArrayList<Node>();
-		}
+		local_root = RealNode.readLocal(local_root_dir);
 		current_dir = local_root;
 		local_root.fillTagSet(all_tags);
 	}
@@ -208,7 +205,7 @@ public class PlayerActivity extends Activity implements
 
 			// Instantiate a JSON array from the request response
 			JSONObject json = new JSONObject(sb.toString());
-			remote_root = Node.readJson(json);
+			remote_root = RealNode.readJson(json);
 			current_dir = remote_root;
 
 		} catch (Exception e) {
@@ -222,7 +219,7 @@ public class PlayerActivity extends Activity implements
 	private void showSongList() {
 		// set up horizontal list of parent directories
 		ArrayList<Node> parents = new ArrayList<Node>();
-		for (Node node = current_dir; node != null; node = node.parent) {
+		for (Node node = current_dir; node != null; node = node.getParent()) {
 			parents.add(node);
 		}
 		Collections.reverse(parents);
@@ -234,7 +231,7 @@ public class PlayerActivity extends Activity implements
 			parent_dirs_layout.addView(dir_button);
 		}
 		ArrayList<Node> list_to_display;
-		if (current_dir == null || current_dir.children == null) {
+		if (current_dir == null || current_dir.getChildren() == null) {
 			list_to_display = new ArrayList<Node>();
 		} else {
 			list_to_display = current_dir.filterChildren(current_filter_tag);
@@ -272,9 +269,9 @@ public class PlayerActivity extends Activity implements
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int position,
 			long id) {
-		Node node = current_dir.children.get(position);
+		Node node = current_dir.getChildren().get(position);
 		if (node != null) {
-			if (node.children != null && node.children.size() > 0) {
+			if (node.getChildren() != null && node.getChildren().size() > 0) {
 				setCurrentDirectory(node);
 			}
 		}
@@ -297,7 +294,7 @@ public class PlayerActivity extends Activity implements
 
 	public void onListedNodeClicked(Node node) {
 		if (node != null) {
-			if (node.children != null && node.children.size() > 0) {
+			if (node.getChildren() != null && node.getChildren().size() > 0) {
 				setCurrentDirectory(node);
 			}
 		}
@@ -306,7 +303,7 @@ public class PlayerActivity extends Activity implements
 	// Call this from GUI thread, and it spawns a thread which recursively
 	// downloads node.
 	public void downloadNode(Node node) {
-		Toast.makeText(this, "Downloading " + node.filename, Toast.LENGTH_SHORT)
+		Toast.makeText(this, "Downloading " + node.getFilename(), Toast.LENGTH_SHORT)
 				.show();
 		// Start lengthy operation in a background thread
 		new DownloadFilesTask(this, node).execute();
@@ -314,7 +311,7 @@ public class PlayerActivity extends Activity implements
 
 	// Call this from GUI thread.
 	public void playNode(Node node) {
-		Toast.makeText(this, "Playing " + node.filename, Toast.LENGTH_SHORT)
+		Toast.makeText(this, "Playing " + node.getFilename(), Toast.LENGTH_SHORT)
 				.show();
 		player.setSource(new NodeSource(node));
 		player.play();
@@ -323,8 +320,8 @@ public class PlayerActivity extends Activity implements
 	public void showCurrentPlayingSong(Node current_node) {
 		ListView song_list_view = (ListView) findViewById(R.id.song_list);
 
-		if(current_node.parent == current_dir) {
-			int current_index = current_dir.children.indexOf(current_node);
+		if(current_node.getParent() == current_dir) {
+			int current_index = current_dir.getChildren().indexOf(current_node);
 			song_list_view.setItemChecked(current_index, true);
 		} else {
 			song_list_view.setItemChecked(song_list_view.getCheckedItemPosition(), false);

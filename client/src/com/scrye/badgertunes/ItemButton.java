@@ -30,9 +30,9 @@ public class ItemButton extends Button implements Button.OnClickListener {
 		this.setOnClickListener(this);
 	}
 	
-	public void setNode(Node _node) {
-		node = _node;
-		setText(node.name);
+	public void setNode(Node node2) {
+		node = node2;
+		setText(node.getName());
 	}
 
 	@Override

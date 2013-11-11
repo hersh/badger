@@ -1,5 +1,6 @@
 package com.scrye.badgertunes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -16,9 +17,9 @@ public class NodeAdapter extends ArrayAdapter<Node> {
 	
 	public NodeAdapter(PlayerActivity _player,
 				       int textViewResourceId,
-			           List<Node> objects,
+			           ArrayList<Node> arrayList,
 			           boolean _use_local) {
-		super(_player, textViewResourceId, objects);
+		super(_player, textViewResourceId, arrayList);
 		player = _player;
 		use_local = _use_local;
 	}

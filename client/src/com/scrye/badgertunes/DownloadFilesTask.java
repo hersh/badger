@@ -36,16 +36,16 @@ public class DownloadFilesTask extends AsyncTask<Void, Integer, String> {
 		if(result != null) {
 			Toast.makeText(player, result, Toast.LENGTH_LONG).show();
 		} else {
-			Toast.makeText(player, "Done downloading " + root_node.filename, Toast.LENGTH_SHORT).show();
+			Toast.makeText(player, "Done downloading " + root_node.getFilename(), Toast.LENGTH_SHORT).show();
 		}
     }
 	
 	private String downloadNode(Node node) {
-		if(node.children == null) {
+		if(node.getChildren() == null) {
 			return downloadFile(node);
 		} else {
-			for(int i = 0; i < node.children.size(); i++) {
-				String error = downloadNode(node.children.get(i));
+			for(int i = 0; i < node.getChildren().size(); i++) {
+				String error = downloadNode(node.getChildren().get(i));
 				if(error != null) {
 					return error;
 				}
@@ -66,7 +66,7 @@ public class DownloadFilesTask extends AsyncTask<Void, Integer, String> {
             OutputStream output = null;
             HttpURLConnection connection = null;
             try {
-            	String encoded_filename = URLEncoder.encode(file_node.filename, "UTF-8");
+            	String encoded_filename = URLEncoder.encode(file_node.getFilename(), "UTF-8");
                 URL url = new URL(player.remote_address + "/get/" + encoded_filename);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
@@ -83,7 +83,7 @@ public class DownloadFilesTask extends AsyncTask<Void, Integer, String> {
 
                 // download the file
                 input = connection.getInputStream();
-                File dest_file = new File(player.local_root_dir, file_node.filename);
+                File dest_file = new File(player.local_root_dir, file_node.getFilename());
                 dest_file.getParentFile().mkdirs();
                 output = new FileOutputStream(dest_file);
 

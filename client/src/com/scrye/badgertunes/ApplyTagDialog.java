@@ -34,8 +34,8 @@ public class ApplyTagDialog extends DialogFragment {
 		Bundle args = new Bundle();
 		ArrayList<String> node_path = new ArrayList<String>();
 		while(node != null) {
-			node_path.add(0, node.name);
-			node = node.parent;
+			node_path.add(0, node.getName());
+			node = node.getParent();
 		}
 		args.putStringArrayList("node", node_path);
 		new_fragment.setArguments(args);
@@ -51,17 +51,17 @@ public class ApplyTagDialog extends DialogFragment {
         Node node = pa.getLocalRoot();
         for(int i = 1; i < node_path.size(); i++) {
     		boolean found = false;
-        	if(node.children != null) {
-        		for(int child_index = 0; child_index < node.children.size(); child_index++) {
-        			if(node.children.get(child_index).name == node_path.get(i)) {
-        				node = node.children.get(child_index);
+        	if(node.getChildren() != null) {
+        		for(int child_index = 0; child_index < node.getChildren().size(); child_index++) {
+        			if(node.getChildren().get(child_index).getName() == node_path.get(i)) {
+        				node = node.getChildren().get(child_index);
         				found = true;
         				break;
         			}
         		}
         	}
         	if(!found) {
-       			pa.showError("Failed to find child " + node_path.get(i) + " in node " + node.filename);
+       			pa.showError("Failed to find child " + node_path.get(i) + " in node " + node.getFilename());
        			dismiss();
        			return;
        		}
@@ -78,7 +78,7 @@ public class ApplyTagDialog extends DialogFragment {
     	view = inflater.inflate(R.layout.apply_tag_dialog, container, false);
     	
         TextView name_view = (TextView) view.findViewById(R.id.name);
-        name_view.setText(node.filename);
+        name_view.setText(node.getFilename());
         
         TextView no_tags_text_view = (TextView) view.findViewById(R.id.no_tags_text);
         ListView tag_list_view = (ListView) view.findViewById(R.id.tag_list);

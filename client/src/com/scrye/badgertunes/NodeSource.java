@@ -6,13 +6,13 @@ public class NodeSource implements SongIterator {
 	private Node current_node;
 	
 	public NodeSource(Node node) {
-		if(node.children == null) {
-			starting_node = node.parent;
+		if(node.getChildren() == null) {
+			starting_node = node.getParent();
 			current_node = node;
 		} else {
 		    starting_node = node;
-		    while(node.children != null && node.children.size() > 0) {
-		    	node = node.children.get(0);
+		    while(node.getChildren() != null && node.getChildren().size() > 0) {
+		    	node = node.getChildren().get(0);
 		    }
 		    current_node = node;
 		}
@@ -24,21 +24,21 @@ public class NodeSource implements SongIterator {
 	}
 	
 	static private int indexOf(Node node) {
-		if(node.parent == null) {
+		if(node.getParent() == null) {
 			return 0;
 		}
-		return node.parent.children.indexOf(node);
+		return node.getParent().getChildren().indexOf(node);
 	}
 	
 	static private boolean isLast(Node node) {
-		if(node.parent == null) {
+		if(node.getParent() == null) {
 			return true;
 		}
-		return indexOf(node) == node.parent.children.size() - 1;
+		return indexOf(node) == node.getParent().getChildren().size() - 1;
 	}
 	
 	static private boolean isFirst(Node node) {
-		if(node.parent == null) {
+		if(node.getParent() == null) {
 			return true;
 		}
 		return indexOf(node) == 0;
@@ -47,14 +47,14 @@ public class NodeSource implements SongIterator {
 	private Node getNext() {
 		Node node = current_node;
 		while(isLast(node) && node != starting_node) {
-			node = node.parent;
+			node = node.getParent();
 		}
 		if(isLast(node)) {
 			return null;
 		}
-		node = node.parent.children.get(indexOf(node) + 1);
-		while(node.children != null) {
-			node = node.children.get(0);
+		node = node.getParent().getChildren().get(indexOf(node) + 1);
+		while(node.getChildren() != null) {
+			node = node.getChildren().get(0);
 		}
 		return node;
 	}
@@ -62,14 +62,14 @@ public class NodeSource implements SongIterator {
 	private Node getPrevious() {
 		Node node = current_node;
 		while(isFirst(node) && node != starting_node) {
-			node = node.parent;
+			node = node.getParent();
 		}
 		if(isFirst(node)) {
 			return null;
 		}
-		node = node.parent.children.get(indexOf(node) - 1);
-		while(node.children != null) {
-			node = node.children.get(node.children.size() - 1);
+		node = node.getParent().getChildren().get(indexOf(node) - 1);
+		while(node.getChildren() != null) {
+			node = node.getChildren().get(node.getChildren().size() - 1);
 		}
 		return node;
 	}

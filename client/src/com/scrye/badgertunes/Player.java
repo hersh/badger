@@ -101,7 +101,7 @@ public class Player implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCom
 		if (!song_set_up) {
 			try {
 				media_player.reset();
-				String filename = source.getCurrentSong().filename;
+				String filename = source.getCurrentSong().getFilename();
 				media_player.setDataSource(filename);
 				Log.w("Player", "setDataSource(" + filename + ")");
 				song_set_up = true;
