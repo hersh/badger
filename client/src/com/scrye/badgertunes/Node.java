@@ -16,8 +16,6 @@ public interface Node {
 
 	public abstract Node getParent();
 
-	public abstract ArrayList<Node> filterChildren(String tag);
-
 	public abstract void writeTags(HashMap<String, Boolean> tag_values);
 
 	/** @brief Read the tags from a Node object and return them as a simple HashMap. */

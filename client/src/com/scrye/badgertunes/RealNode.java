@@ -4,13 +4,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +16,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class RealNode implements Node {
     private String name;
@@ -52,23 +48,42 @@ public class RealNode implements Node {
 		return parent;
 	}
 
-	@Override
-	public ArrayList<Node> filterChildren(String tag) {
-    	ArrayList<Node> result = new ArrayList<Node>();
+	/** @brief Return a tree of FakeNodes which have the given tag.  If tag is "None", return this node. */
+	public Node filter(String tag) {
     	if(tag == "None") {
-    		return getChildren();
+    		return this;
+    	} else {
+    		return filterInternal(tag, false);
     	}
-    	if(children != null) {
-    		for(Node child: children) {
-    			RealNode real_child = (RealNode) child;
-    			if(real_child != null && (real_child.hasTag(tag) || real_child.filterChildren(tag).size() > 0)) {
-    				result.add(child);
-    			}
-    		}
-    	}
-    	return result;
     }
-    
+
+	private FakeNode filterInternal(String tag, boolean tag_base_value) {
+		Boolean value = tags.get(tag);
+		boolean tag_val = (value != null && value.booleanValue() == true || value == null && tag_base_value == true);
+
+		if(children == null) {
+			if(tag_val == true) {
+				return new FakeNode(this);
+			} else {
+				return null;
+			}
+		} else {
+			FakeNode new_node = new FakeNode(this);
+			for(Node child: children) {
+				RealNode real_child = (RealNode) child;
+				FakeNode new_child = real_child.filterInternal(tag, tag_val);
+				if(new_child != null) {
+					new_node.addChild(new_child);
+				}
+			}
+			if(new_node.getChildren() != null) {
+				return new_node;
+			} else {
+				return null;
+			}
+		}
+	}
+	
 	private boolean hasTag(String tag) {
     	RealNode node = this;
 	    while(node != null) {

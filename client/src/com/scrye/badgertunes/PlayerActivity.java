@@ -38,7 +38,8 @@ public class PlayerActivity extends Activity implements
 
 	private Handler handler = new Handler();
 	private Node remote_root;
-	private Node local_root;
+	private RealNode local_root;
+	private Node filtered_root;
 	private Node current_dir;
 	private boolean use_local;
 	public String remote_address = "http://10.1.10.9:8080";
@@ -104,14 +105,9 @@ public class PlayerActivity extends Activity implements
 		if(tag.equals(current_filter_tag)) {
 			return;
 		}
-		showError("filtering by tag " + tag);
 		current_filter_tag = tag;
-		while(current_dir != null &&
-				current_dir != local_root &&
-				current_dir != remote_root &&
-				current_dir.filterChildren(tag).size() == 0) {
-			current_dir = current_dir.getParent();
-		}
+		filtered_root = local_root.filter(tag);
+		current_dir = filtered_root;
 		showSongList();
 	}
 	
@@ -234,7 +230,7 @@ public class PlayerActivity extends Activity implements
 		if (current_dir == null || current_dir.getChildren() == null) {
 			list_to_display = new ArrayList<Node>();
 		} else {
-			list_to_display = current_dir.filterChildren(current_filter_tag);
+			list_to_display = current_dir.getChildren();
 		}
 		// set up main list of songs or directories
 		NodeAdapter adapter = new NodeAdapter(this, R.id.title,
