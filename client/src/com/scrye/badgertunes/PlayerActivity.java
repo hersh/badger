@@ -227,10 +227,12 @@ public class PlayerActivity extends Activity implements
 			parent_dirs_layout.addView(dir_button);
 		}
 		ArrayList<Node> list_to_display;
+		int scroll_y = 0;
 		if (current_dir == null || current_dir.getChildren() == null) {
 			list_to_display = new ArrayList<Node>();
 		} else {
 			list_to_display = current_dir.getChildren();
+			scroll_y = current_dir.getScrollY();
 		}
 		// set up main list of songs or directories
 		NodeAdapter adapter = new NodeAdapter(this, R.id.title,
@@ -238,6 +240,7 @@ public class PlayerActivity extends Activity implements
 		ListView song_list_view = (ListView) findViewById(R.id.song_list);
 		song_list_view.setAdapter(adapter);
 		song_list_view.setOnItemClickListener(this);
+		song_list_view.setSelectionFromTop(scroll_y, 0);
 
 		showEmpty();
 	}
@@ -274,6 +277,9 @@ public class PlayerActivity extends Activity implements
 	}
 
 	public void setCurrentDirectory(Node node) {
+		ListView song_list_view = (ListView) findViewById(R.id.song_list);
+		int scroll_y = song_list_view.getFirstVisiblePosition();
+		current_dir.setScrollY(scroll_y);
 		current_dir = node;
 		showSongList();
 		if(player.getSource() != null) {

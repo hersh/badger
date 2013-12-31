@@ -9,6 +9,7 @@ public class FakeNode implements Node {
 	private Node origin; ///< The node this FakeNode refers to.
 	private Node parent;
 	private ArrayList<Node> children;
+	private int scroll_y;
 	
 	public FakeNode(Node origin_node) {
 		origin = origin_node;
@@ -59,5 +60,15 @@ public class FakeNode implements Node {
 	@Override
 	public void fillTagSet(Set<String> tag_set) {
 		origin.fillTagSet(tag_set);
+	}
+	
+	@Override
+	public int getScrollY() {
+		return scroll_y;
+	}
+	
+	@Override
+	public void setScrollY(int scroll_y) {
+		this.scroll_y = scroll_y;
 	}
 }

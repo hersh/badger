@@ -23,6 +23,7 @@ public class RealNode implements Node {
     private ArrayList<Node> children;
     private RealNode parent;
     private HashMap<String,Boolean> tags = new HashMap<String,Boolean>();
+    private int scroll_y;
     
     @Override
 	public String toString() {
@@ -339,4 +340,14 @@ public class RealNode implements Node {
 			}
     	});
     }
+
+	@Override
+	public int getScrollY() {
+		return scroll_y;
+	}
+	
+	@Override
+	public void setScrollY(int scroll_y) {
+		this.scroll_y = scroll_y;
+	}
 }
